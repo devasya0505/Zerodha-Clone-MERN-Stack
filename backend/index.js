@@ -2,15 +2,20 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const { HoldingsModel } = require("./model/HoldingsModel");
 const { PositionsModel } = require("./model/PositionsModel");
 const { OrdersModel } = require("./model/OrdersModel");
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
 const app = express(); //create a new application
+
+app.use(cors());
+app.use(bodyParser.json());
 
 // app.get("/addHoldings", async (req, res) => {
 //   let tempHoldings = [
@@ -181,9 +186,31 @@ const app = express(); //create a new application
 //   res.send("Done!");
 // });
 
+app.get("/allHoldings", async (req, res) => {
+  let allHoldings = await HoldingsModel.find({});
+  res.json(allHoldings);
+});
 
-app.listen(3001, () => {
-  console.log("App Started"); //port=3001, because 3000 is in use
+app.get("/allPositions", async (req, res) => {
+  let allPositions = await PositionsModel.find({});
+  res.json(allPositions);
+});
+
+app.post("/newOrder", async (req, res) => {
+  let newOrder = new OrdersModel({
+    name: req.body.name,
+    qty: req.body.qty,
+    price: req.body.price,
+    mode: req.body.mode,
+  });
+
+  newOrder.save();
+
+  res.send("Order saved!");
+});
+
+app.listen(3002, () => {
+  console.log("App Started"); //port=3002, because 3000 & 3001 is in use
   mongoose.connect(uri);
   console.log("DB Connected");
 });
